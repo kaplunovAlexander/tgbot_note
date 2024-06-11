@@ -26,16 +26,16 @@ async def orm_get_note(session: AsyncSession, user_id: int, note_id: int):
     result = await session.execute(
         select(Notes).filter_by(id=note_id, user_id=user_id)
     )
-    note = result.scalar_one_or_none()
+    note = result.scalar()
     return note
 
 
-async def orm_update_note(session: AsyncSession, user_id: int,  note_id: int, data  ):
+async def orm_update_note(session: AsyncSession, user_id: int,  note_id: int, data):
     async with session.begin():
         await session.execute(
             update(Notes)
             .where(Notes.id == note_id, Notes.user_id == user_id)
-            .values(description=data["description"])
+            .values(description=data["note"])
         )
         await session.commit()
 

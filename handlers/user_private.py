@@ -124,11 +124,11 @@ async def change_note_data_callback(callback: types.CallbackQuery, state: FSMCon
 async def change_note_process(message: types.Message, state: FSMContext, session: AsyncSession):
     user_id = message.from_user.id
     note_id = int(message.text)
-    note_for_change = await orm_get_note(session, user_id, note_id)
+    CurrentAction.note_for_change = await orm_get_note(session, user_id, note_id)
 
-    if note_for_change:
-        await message.answer("Что вы хотите записать?", reply_markup=get_keyboard("Назад", sizes=(1, 0)))
-        await state.update_data(note_for_change=note_for_change)
+    if CurrentAction.note_for_change:
+        await message.answer("Введите измененную информацию", reply_markup=get_keyboard("Назад", sizes=(1, 0)))
+        await state.update_data(note_for_change=CurrentAction.note_for_change)
         await state.set_state(CurrentAction.note)
     else:
         await message.answer("Заметка не найдена. Попробуйте снова.", reply_markup=USER_KBD)
@@ -148,12 +148,9 @@ async def added_note_cmd(message: types.Message, state: FSMContext, session: Asy
     user_id = message.from_user.id
     await state.update_data(note=message.text)
     data = await state.get_data()
-
+    note_for_change = CurrentAction.note_for_change
     try:
-
-        note_for_change = CurrentAction.note_for_change
-
-        if note_for_change:
+        if CurrentAction.note_for_change:
             await orm_update_note(session, user_id, note_for_change.id, data)
             await message.answer("Заметка изменена", reply_markup=USER_KBD)
         else:
